@@ -1,0 +1,55 @@
+import os
+import sys
+import shutil
+from datetime import datetime
+
+def backup_files(source, destination):
+    """Backup single file or all files from a directory."""
+    # Handle single file backup
+    if os.path.isfile(source):
+        if not os.path.exists(os.path.dirname(destination)):
+            print(f"Destination folder not found. Creating it...")
+            os.makedirs(os.path.dirname(destination), exist_ok=True)
+
+        base, ext = os.path.splitext(os.path.basename(source))
+        dest_file = destination
+
+        # If destination file already exists, append timestamp
+        if os.path.exists(dest_file):
+            timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+            dest_file = f"{os.path.splitext(destination)[0]}_{timestamp}{ext}"
+
+        shutil.copy2(source, dest_file)
+        print(f"File copied: {source} → {dest_file}")
+        return
+
+    # Handle directory backup
+    if not os.path.exists(source):
+        print(f"Source directory '{source}' does not exist.")
+        return
+
+    if not os.path.exists(destination):
+        print(f"Destination directory '{destination}' not found. Creating it...")
+        os.makedirs(destination)
+
+    for file_name in os.listdir(source):
+        src_file = os.path.join(source, file_name)
+        if os.path.isfile(src_file):
+            dest_file = os.path.join(destination, file_name)
+            if os.path.exists(dest_file):
+                timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+                base, ext = os.path.splitext(file_name)
+                dest_file = os.path.join(destination, f"{base}_{timestamp}{ext}")
+            shutil.copy2(src_file, dest_file)
+            print(f"Copied: {file_name}")
+
+    print("🎉 Backup completed successfully!")
+
+
+if __name__ == "__main__":
+    if len(sys.argv) != 3:
+        print("Usage: python backup_script.py <source> <destination>")
+    else:
+        source = sys.argv[1]
+        destination = sys.argv[2]
+        backup_files(source, destination)
